@@ -14,7 +14,7 @@ class Controlador extends Controller
     public function index(){
         return view("vista",['medicamentos'=>$this->modelo->obtenerInventario(),'receta'=>$this->modelo->obtenerReceta()]);
     }
-    public function agregarMedicamento($request){
+    public function agregarMedicamento(Request $request){
         $this->modelo->agregarMedicamentoEnReceta($request);
         return redirect()->route('index');
     }

@@ -11,13 +11,14 @@ class Bd
     }
     public function obtenerMedicamentosConUpdate()
     {
-        return Inventario::all()->lockForUpdate();
+        return Inventario::lockForUpdate()->get();
     }
 
-    public function checkOut($inventario, $receta)
+    public function checkOut($receta)
     {
+        sleep(6);
         foreach ($receta as $medicamento) {
-            $med = Invetario::where('id', $medicamento->id)
+            $med = Inventario::where('id', $medicamento->id)
                 ->first();
 
             if (!$med) {
@@ -27,6 +28,7 @@ class Bd
             if ($med->cantidad >= $medicamento->cantidad) {
                 $med->cantidad -= $medicamento->cantidad;
                 $med->save();
+                
             } else {
                 throw new \Exception("Stock insuficiente para: " . $medicamento->name);
             }

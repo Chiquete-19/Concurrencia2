@@ -11,7 +11,7 @@ class Receta{
             'cantidad' => $request->cantidad,
             'precioUnitario' => $request->precioUnitario,
         ];
-        foreach ($this->medicamentos as $existingMedicamento) {
+        foreach ($this->Medicamentos as $existingMedicamento) {
             if ($existingMedicamento->id === $Medicamento->id) {
                 $existingMedicamento->cantidad += 1;
                 return;

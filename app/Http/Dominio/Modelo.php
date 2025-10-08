@@ -40,12 +40,13 @@ class Modelo
         try{
             $this->bd->iniciarTransaccion();
             $this->inventario->actualizarInventario($this->bd->obtenerMedicamentosConUpdate());
-            if($this->inventario->validarStrock($this->receta)){
-                $this->bd->checkout($this->receta);
+            if($this->inventario->validarStock($this->receta)){
+                $this->bd->checkout($this->receta->obtenerMedicamentos());
                 $this->bd->finalizarTransaccion();
                 $this->receta->limpiarReceta();
                 session(['receta' => $this->receta]);
             }
+            return("Pedido realizado con exito");
         }catch(\Throwable $e){
             $this->bd->revertirTransaccion();
             return ($e->getMessage());

@@ -114,7 +114,9 @@
         </div>
         
         <div class="d-flex justify-content-between align-items-center mt-3">
-            <h5><b>Total: </b>${{ $carrito->obtenerTotal() }}</h5>
+            <h5><b>Total: </b>${{ number_format(collect($receta)->sum(function($item) {
+        return $item->cantidad * $item->precioUnitario;
+    }), 2) }}</h5>
 
             <div>
                 <form action="{{ route('limpiarReceta') }}" method="POST" class="d-inline">
