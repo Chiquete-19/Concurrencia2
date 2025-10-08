@@ -13,7 +13,7 @@ class InventarioDominio{
 
     public function actualizarInventario($datos){
         $inventario=[];
-        foreach ($medicamentos as $medicamento) {
+        foreach ($datos as $medicamento) {
             $med=(object)[
                 'id'=>$medicamento->id,
                 'nombre'=>$medicamento->nombre,
@@ -26,6 +26,19 @@ class InventarioDominio{
             ];
             $this->inventario[]=$med;
         }
+    }
+
+    public function validarStock($receta){
+        foreach ($receta->obtenerMedicamentos() as $medicamento) {
+            foreach ($this->inventario as $item) {
+                if($item->id == $medicamento->id){
+                    if($item->cantidad < $medicamento->cantidad){
+                        throw new \Exception("Stock insuficiente para: " . $medicamento->name);
+                    }
+                }
+            }
+        }
+        return true;
     }
     
     public function obtenerInventario(){
