@@ -1,7 +1,7 @@
 <?php
 
 class Receta{
-    
+
     private $Medicamentos=[];
 
     public function agregarMedicamento($request){
@@ -24,7 +24,7 @@ class Receta{
     {
         return $this->Medicamentos ?? [];
     }
-    public function limpiarCarrito(){
+    public function limpiarReceta(){
         $this->Medicamentos = [];
     }
     public function obtenerTotal(){

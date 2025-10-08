@@ -1,35 +1,47 @@
 <?php
 namespace App\Http\Servicios;
 use Illuminate\Support\Facades\DB;
-use App\Models\Product;
 
 class Bd
 {
-    public function obtenerProductos()
+    public function obtenerMedicamentos()
     {
-        return Product::all();
+        return Inventario::all();
+    }
+    public function obtenerMedicamentosConUpdate()
+    {
+        return Inventario::all()->lockForUpdate();
     }
 
-    public function checkOut($cartItems)
+    public function checkOut($inventario, $receta)
     {
-        DB::transaction(function () use ($cartItems) {
-            foreach ($cartItems as $item) {
-                $med = Product::where('id', $item->id)
-                    ->lockForUpdate()
-                    ->first();
+        foreach ($receta as $medicamento) {
+            $med = Invetario::where('id', $medicamento->id)
+                ->first();
 
-                if (!$med) {
-                    throw new \Exception("Producto no encontrado: " . $item->name);
-                }
-
-                if ($med->cantidad >= $item->cantidad) {
-                    $med->cantidad -= $item->cantidad;
-                    $med->save();
-                } else {
-                    throw new \Exception("Stock insuficiente para: " . $item->name);
-                }
+            if (!$med) {
+                throw new \Exception("Producto no encontrado: " . $medicamento->name);
             }
-        });
-        
+
+            if ($med->cantidad >= $medicamento->cantidad) {
+                $med->cantidad -= $medicamento->cantidad;
+                $med->save();
+            } else {
+                throw new \Exception("Stock insuficiente para: " . $medicamento->name);
+            }
+        }
+    }
+
+    public function iniciarTransaccion()
+    {
+        DB::beginTransaction();
+    }
+    public function finalizarTransaccion()
+    {
+        DB::commit();
+    }
+    public function revertirTransaccion()
+    {
+        DB::rollBack();
     }
 }
