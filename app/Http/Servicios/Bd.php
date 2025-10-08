@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Servicios;
 use Illuminate\Support\Facades\DB;
+use App\Models\Inventario;
 
 class Bd
 {

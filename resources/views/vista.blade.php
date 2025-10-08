@@ -1,113 +1,133 @@
-@extends('layouts.app')
+@extends('app')
 
 @section('content')
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Medicamentos</h2>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            TeAcercoSalud
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
 
+<div class="container" style="margin-top: 100px">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tienda</li>
+        </ol>
+    </nav>
+
+    {{-- Mensajes de sesión --}}
+    @if(session()->has('success_msg'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session()->get('success_msg') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    @endif
+
+    @if(session()->has('alert_msg'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ session()->get('alert_msg') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        @foreach($errors->all() as $error)
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ $error }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+        @endforeach
+    @endif
+
+    <h4 class="mb-4">Productos disponibles</h4>
     <div class="row">
-        @foreach($productos as $producto)
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm">
-                <img src="{{ $producto->imagen }}" class="card-img-top" alt="{{ $producto->nombre }}">
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ $producto->nombre }}</h5>
-                    <p class="text-muted">${{ number_format($producto->precio, 2) }}</p>
-                    <button class="btn btn-primary btn-agregar"
-                            data-id="{{ $producto->id }}"
-                            data-nombre="{{ $producto->nombre }}"
-                            data-precio="{{ $producto->precio }}">
-                        Agregar
-                    </button>
+        @foreach($medicamentos as $pro)
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="{{ asset('images/' . $pro->image_path) }}"
+                         class="card-img-top mx-auto"
+                         style="height: 150px; width: 150px; display: block;"
+                         alt="{{ $pro->nombre }}">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">{{ $pro->nombre }}</h6>
+                        <p>${{ number_format($pro->precioUnitario, 2) }}</p>
+
+                        <form action="{{ route('agragarMedicamento') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $pro->id }}">
+                            <input type="hidden" name="nombre" value="{{ $pro->nombre }}">
+                            <input type="hidden" name="precioUnitario" value="{{ $pro->precioUnitario }}">
+                            <input type="hidden" name="cantidad" value="1">
+                            <input type="hidden" name="minimo" value="{{ $pro->minimo }}">
+                            <input type="hidden" name="maximo" value="{{ $pro->maximo }}">
+                            <input type="hidden" name="detalles" value="{{ $pro->detalles }}">
+                            <input type="hidden" name="image_path" value="{{ $pro->image_path }}">
+
+                            <button class="btn btn-secondary btn-sm" title="Agregar al carrito">
+                                <i class="fa fa-shopping-cart"></i> Agregar
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
         @endforeach
     </div>
 
-    <!-- Tabla debajo -->
-    <div class="card mt-5 shadow">
-        <div class="card-header bg-dark text-white"> Carrito </div>
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0" id="tabla-carrito">
-                <thead class="table-dark">
+    <hr class="my-5">
+    <h4 class="mb-4">Carrito de compras</h4>
+
+    @if(isset($receta) && count($receta) > 0)
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead class="thead-dark">
                     <tr>
                         <th>Producto</th>
-                        <th>Precio</th>
                         <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Acción</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                    @foreach($receta as $item)
+                        <tr>
+                            <td>{{ $item->nombre }}</td>
+                            <td>{{ $item->cantidad }}</td>
+                            <td>${{ number_format($item->precioUnitario, 2) }}</td>
+                            <td>${{ number_format($item->cantidad * $item->precioUnitario, 2) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
             </table>
         </div>
-        <div class="card-footer text-end">
-            <h5>Total general: <span id="totalGeneral" class="fw-bold text-success">$0.00</span></h5>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <h5><b>Total: </b>${{ $carrito->obtenerTotal() }}</h5>
+
+            <div>
+                <form action="{{ route('limpiarReceta') }}" method="POST" class="d-inline">
+                    @csrf
+                    <button class="btn btn-secondary btn-sm">Vaciar carrito</button>
+                </form>
+                <a href="{{ route('checkout') }}" class="btn btn-success btn-sm">Proceder al Checkout</a>
+            </div>
         </div>
-    </div>
+    @else
+        <p class="text-muted mt-3">No hay productos en tu carrito.</p>
+    @endif
+
+    <br><br>
 </div>
-
-<!-- Script -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const tabla = document.querySelector('#tabla-carrito tbody');
-    const totalGeneralEl = document.getElementById('totalGeneral');
-    const productosAgregados = {};
-
-    document.querySelectorAll('.btn-agregar').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const nombre = btn.dataset.nombre;
-            const precio = parseFloat(btn.dataset.precio);
-
-            if (productosAgregados[id]) {
-                const fila = document.getElementById(`fila-${id}`);
-                const cantidadInput = fila.querySelector('.cantidad');
-                cantidadInput.value = parseInt(cantidadInput.value) + 1;
-                actualizarTotalFila(fila, precio);
-            } else {
-                const fila = document.createElement('tr');
-                fila.id = `fila-${id}`;
-                fila.innerHTML = `
-                    <td>${nombre}</td>
-                    <td>$${precio.toFixed(2)}</td>
-                    <td><input type="number" min="1" value="1" class="form-control form-control-sm cantidad" style="width:80px;"></td>
-                    <td class="total">$${precio.toFixed(2)}</td>
-                    <td><button class="btn btn-danger btn-sm eliminar">🗑</button></td>
-                `;
-                tabla.appendChild(fila);
-                productosAgregados[id] = { precio };
-
-                fila.querySelector('.cantidad').addEventListener('change', e => {
-                    if (e.target.value < 1) e.target.value = 1;
-                    actualizarTotalFila(fila, precio);
-                });
-
-                fila.querySelector('.eliminar').addEventListener('click', () => {
-                    delete productosAgregados[id];
-                    fila.remove();
-                    actualizarTotalGeneral();
-                });
-            }
-            actualizarTotalGeneral();
-        });
-    });
-
-    function actualizarTotalFila(fila, precio) {
-        const cantidad = parseInt(fila.querySelector('.cantidad').value);
-        const total = cantidad * precio;
-        fila.querySelector('.total').textContent = `$${total.toFixed(2)}`;
-        actualizarTotalGeneral();
-    }
-
-    function actualizarTotalGeneral() {
-        let total = 0;
-        document.querySelectorAll('#tabla-carrito tbody tr').forEach(fila => {
-            const valor = parseFloat(fila.querySelector('.total').textContent.replace('$', ''));
-            total += valor;
-        });
-        totalGeneralEl.textContent = `$${total.toFixed(2)}`;
-    }
-});
-</script>
 @endsection

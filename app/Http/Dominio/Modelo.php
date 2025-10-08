@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Dominio;
-use App\Servicios\Bd;
+use App\Http\Servicios\Bd;
+use App\Http\Dominio\Receta;
+use App\Http\Dominio\InventarioDominio;
 
 class Modelo
 {
@@ -18,7 +20,9 @@ class Modelo
             session(['receta' => $this->receta]);
         }
     }
-
+    public function obtenerReceta(){
+        return $this->receta->obtenerMedicamentos();
+    }
     public function obtenerInventario(){
         return $this->inventario->obtenerInventario();
     }

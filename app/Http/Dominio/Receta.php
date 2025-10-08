@@ -1,5 +1,5 @@
 <?php
-
+namespace App\Http\Dominio;
 class Receta{
 
     private $Medicamentos=[];
